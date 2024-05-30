@@ -367,6 +367,8 @@ fn draw_peak_meters(
     let last_held_l_id = Id::new(format!("peak_meter_{bounds:?}_last_peak_l"));
     let last_held_r_id = Id::new(format!("peak_meter_{bounds:?}_last_peak_r"));
 
+    let dt = ui.ctx().input(|input| input.stable_dt);
+
     let held_peak_value_db_l = ui.memory_mut(|r| *r.data.get_temp_mut_or(held_l_id, f32::MIN));
     let held_peak_value_db_r = ui.memory_mut(|r| *r.data.get_temp_mut_or(held_r_id, f32::MIN));
 
@@ -390,7 +392,7 @@ fn draw_peak_meters(
         if let Some(peak_time) = peak_time {
             if now > peak_time + hold_time && peak_level > level {
                 let normalized = remap_clamp(peak_level, MIN_DB..=MAX_DB, 0.0..=1.0);
-                let step = normalized * 0.992;
+                let step = normalized * (-0.5 * dt).exp();
                 peak_level = remap_clamp(step, 0.0..=1.0, MIN_DB..=MAX_DB);
             }
         }
